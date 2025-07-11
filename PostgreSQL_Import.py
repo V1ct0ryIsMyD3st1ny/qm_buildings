@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from geoalchemy2.types import Geometry
 from geoalchemy2.shape import WKTElement
 import pandas as pd
+import os
 
 
 class Base(DeclarativeBase):
@@ -38,7 +39,8 @@ class SearchBuilding(Base):
     def __repr__(self) -> str:
         return f"Building(hauskey={self.hauskey})"
     
-engine = create_engine("postgresql+psycopg2://postgres:Quickmail2025!@localhost:5432/Datenmanagement")
+pwd = os.environ.get("POSTGRES_PWD")
+engine = create_engine("postgresql+psycopg2://postgres:"+pwd+"@localhost:5432/Datenmanagement")
 Session = sessionmaker(engine)
 
 def setup_tables(engine):
