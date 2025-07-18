@@ -101,5 +101,4 @@ def populate_buildings_post(Session):
 # populate_buildings_qm(Session)
 # populate_buildings_post(Session)
 
-from Scripts import CONFIG_PATH
 

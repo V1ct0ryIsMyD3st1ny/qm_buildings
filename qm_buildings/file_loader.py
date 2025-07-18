@@ -1,7 +1,9 @@
-from . import CONFIG_PATH, BASE_DIR
+from qm_buildings.settings import BASE_DIR, CONFIG_PATH
 from configparser import ConfigParser
 from tkinter import filedialog as fd, messagebox as mb
 import pandas as pd
+
+
 
 def expected_columns(section):
     config = ConfigParser()
