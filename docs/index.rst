@@ -6,8 +6,6 @@
 qm_buildings documentation
 ==========================
 **QM Buildings** wird die Basis für die interaktion mit Gebäudedaten sein.
-Check out :doc:`usage` für weiter Infomationen. Unter anderem wie du das Projekt :ref:`installieren <installation>` kannst.
-
 
 .. toctree::
    :maxdepth: 2
@@ -17,3 +15,5 @@ Contents
 --------
 
 .. toctree::
+
+   file_loader
