@@ -1,8 +1,8 @@
 from tkinter import filedialog as fd, messagebox as mb
 import pandas as pd
 import qm_buildings.settings as settings
-from typing import NamedTuple
-from functools import partial
+import tkinter as tk
+from tkinter import ttk
 
 
 def building_columns(building_type: str) -> list[str]:
@@ -34,7 +34,7 @@ def missing_columns(df: pd.DataFrame, expected_columns: list[str]) -> list[str]:
     return missing
     
 
-def validate_file_columns(filepath: str, expected_columns: list[str]) -> tuple[bool, str]:
+def validate_file_columns(filepath: str, expected_columns: list[str] = []) -> tuple[bool, str]:
     """Validate if the file contains all expected_columns
 
     Args:
@@ -94,3 +94,36 @@ def load_files(validator: callable) -> str:
             )
             if not retry:
                 raise KeyboardInterrupt("Nutzer hat den Import abgebrochen.")
+            
+            
+
+def launch_mapping_window(csv_columns, model_columns):
+    mapping = {}
+
+    root = tk.Tk()
+    root.title("Map CSV Columns to Table Columns")
+
+    tk.Label(root, text="CSV Column", font=("Arial", 10, "bold")).grid(row=0, column=0, padx=10, pady=5)
+    tk.Label(root, text="SQLAlchemy Column", font=("Arial", 10, "bold")).grid(row=0, column=1, padx=10, pady=5)
+
+    comboboxes = {}
+
+    for i, csv_col in enumerate(csv_columns):
+        tk.Label(root, text=csv_col).grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
+
+        cb = ttk.Combobox(root, values=model_columns, state="readonly", width=30)
+        cb.grid(row=i+1, column=1, padx=10, pady=5)
+        comboboxes[csv_col] = cb
+
+    def on_submit():
+        for csv_col, cb in comboboxes.items():
+            selected = cb.get()
+            if selected:
+                mapping[csv_col] = selected
+        root.destroy()
+
+    submit_btn = ttk.Button(root, text="Submit Mapping", command=on_submit)
+    submit_btn.grid(row=len(csv_columns)+1, column=0, columnspan=2, pady=10)
+
+    root.mainloop()
+    return mapping
