@@ -3,7 +3,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-LOOKUP_COLUMNS = ["GebäudeID NEU", "Hauskey", "ZGB-PLZ", "Depot", "ZGB-Nr", "Geo-X Gebäude", "Geo-Y Gebäude"]
+LOOKUP_COLUMNS = ["Hauskey", "ZGB-PLZ", "Depot", "ZGB-Nr", "Geo-X Gebäude", "Geo-Y Gebäude"]
 SEARCH_COLUMNS = ["HAUSKEY", "Street", "HouseNo", "KOORD_X_LV95", "KOORD_Y_LV95"]
 
 lookup_mapper = {

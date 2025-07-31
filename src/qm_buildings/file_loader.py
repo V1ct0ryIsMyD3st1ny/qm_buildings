@@ -97,33 +97,44 @@ def load_files(validator: callable) -> str:
             
             
 
-def launch_mapping_window(csv_columns, model_columns):
-    mapping = {}
+def launch_mapping_window(table_columns, csv_columns):
 
     root = tk.Tk()
     root.title("Map CSV Columns to Table Columns")
 
-    tk.Label(root, text="CSV Column", font=("Arial", 10, "bold")).grid(row=0, column=0, padx=10, pady=5)
-    tk.Label(root, text="SQLAlchemy Column", font=("Arial", 10, "bold")).grid(row=0, column=1, padx=10, pady=5)
+    tk.Label(root, text="SQL Column", font=("Arial", 10, "bold")).grid(row=0, column=0, padx=10, pady=5)
+    tk.Label(root, text="Table Column", font=("Arial", 10, "bold")).grid(row=0, column=1, padx=10, pady=5)
 
+    mapping = {}
     comboboxes = {}
 
-    for i, csv_col in enumerate(csv_columns):
-        tk.Label(root, text=csv_col).grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
+    table_columns += ["x coordinate", "y coordinate"]
+    table_columns.remove("geom")
+    
+    for i, table_col in enumerate(table_columns):
+        tk.Label(root, text=table_col).grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
 
-        cb = ttk.Combobox(root, values=model_columns, state="readonly", width=30)
+        cb = ttk.Combobox(root, values=csv_columns, state="readonly", width=30)
         cb.grid(row=i+1, column=1, padx=10, pady=5)
-        comboboxes[csv_col] = cb
+        comboboxes[table_col] = cb
 
     def on_submit():
-        for csv_col, cb in comboboxes.items():
-            selected = cb.get()
-            if selected:
-                mapping[csv_col] = selected
-        root.destroy()
+        mapping.clear()
+        for _, table_col in enumerate(table_columns):
+            selected = comboboxes[table_col].get()
+            if not selected:
+                mb.showerror(title="Wrong input", message=f"Zeile {table_col} nicht ausgefüllt.")
+                break
+            elif selected in mapping.keys():
+                mb.showerror(title="Wrong input", message=f"{selected} was selected multiple times.")
+                break
+            else:
+                mapping[selected] = table_col
+        else:
+            root.destroy()
 
     submit_btn = ttk.Button(root, text="Submit Mapping", command=on_submit)
-    submit_btn.grid(row=len(csv_columns)+1, column=0, columnspan=2, pady=10)
+    submit_btn.grid(row=len(table_columns)+1, column=0, columnspan=4, pady=10)
 
     root.mainloop()
     return mapping
