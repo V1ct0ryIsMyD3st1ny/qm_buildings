@@ -8,7 +8,7 @@ import os
 
 
 
-def local_enginge() -> Engine:
+def local_engine() -> Engine:
     pwd = os.environ.get("POSTGRES_PWD")
     engine = create_engine("postgresql+psycopg2://postgres:"+pwd+"@localhost:5432/Datenmanagement")
     return engine

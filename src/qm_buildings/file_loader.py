@@ -1,71 +1,19 @@
 from tkinter import filedialog as fd, messagebox as mb
-import pandas as pd
 import qm_buildings.settings as settings
 import tkinter as tk
 from tkinter import ttk
 
+  
 
-def building_columns(building_type: str) -> list[str]:
-    """Return the required columns according to the building_type
-
-    Args:
-        building_type ({'lookup', 'search'}): The type of buildings to return the required columns of
+def load_file() -> str:
+    """Let user select a csv-file.
 
     Raises:
-        ValueError: bulding_type was neither 'lookup' nor 'search'
+        KeyboardInterrupt: No file was selected and user cancels retry.
 
     Returns:
-        list[str]: The required columns.
+        str: filepath of the selected file.
     """    
-    
-    #Check that building_type is either "lookup" or "search"
-    if "lookup" in building_type.lower():
-        expected_columns = settings.LOOKUP_COLUMNS
-    elif "search" in building_type.lower():
-        expected_columns = settings.SEARCH_COLUMNS
-    else:
-        raise ValueError("building_type must be either lookup or search")
-    return expected_columns
-
-
-def missing_columns(df: pd.DataFrame, expected_columns: list[str]) -> list[str]:
-    """Return list of elements in expected_columns but not in dataframe."""
-    missing = [col for col in expected_columns if col not in df.columns]
-    return missing
-    
-
-def validate_file_columns(filepath: str, expected_columns: list[str] = []) -> tuple[bool, str]:
-    """Validate if the file contains all expected_columns
-
-    Args:
-        filepath (str): A csv-File
-        expected_columns (list[str]): A list of columns to test if contained in the file.
-
-    Returns:
-        tuple[bool, str]: Returns True if all columns were found. If not also returns an error message.
-    """    
-    df = pd.read_csv(filepath, sep=";", encoding='utf-8', nrows=10, header=0)
-    missing = missing_columns(df, expected_columns)
-    if not missing:
-        return True, ""
-    msg = f"Spalte(n) {', '.join(missing)} fehlen"
-    return False, msg
-
-
-def load_files(validator: callable) -> str:
-    """Let user select a csv-file and validate it using the validator.
-
-    Args:
-        validator (callable): Function to validate the file.
-
-    Raises:
-        KeyboardInterrupt: If no file is selected and user cancels retry
-        KeyboardInterrupt: If the file did not pass validation and user cancels retry
-
-    Returns:
-        str: filepath of the selected file
-    """    
-
     #User should only select a csv-file
     options = {
         'title': 'Wähle eine Datei aus',
@@ -73,20 +21,12 @@ def load_files(validator: callable) -> str:
         'initialdir': settings.BASE_DIR,
         'defaultextension': ".csv"
     }
-    
+    #Loop until file is selected.
     while True:
         filepath = fd.askopenfilename(**options)
         if filepath:
-            valid, message = validator(filepath)
-            if not valid:
-                retry = mb.askretrycancel(
-                    title='Import fehlgeschlagen',
-                    message=message
-                )
-                if not retry:
-                    raise KeyboardInterrupt("Nutzer hat den Import abgebrochen")
-            else:
-                return filepath
+            return filepath
+        #If no file selected ask for retry.
         else:
             retry = mb.askretrycancel(
                 title='Keine Datei ausgwählt',
@@ -95,46 +35,62 @@ def load_files(validator: callable) -> str:
             if not retry:
                 raise KeyboardInterrupt("Nutzer hat den Import abgebrochen.")
             
-            
 
-def launch_mapping_window(table_columns, csv_columns):
+def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -> dict:
+    """Let user match columns by selecting columns in select_columns.
+
+    Args:
+        match__columns (list[str]): List of columns to match.
+        select_columns (list[str]): List of columns to select.
+
+    Returns:
+        dict: Dictionnary with key in select_columns and corresponding match_column.
+    """    
 
     root = tk.Tk()
-    root.title("Map CSV Columns to Table Columns")
+    root.title("Match columns")
 
     tk.Label(root, text="SQL Column", font=("Arial", 10, "bold")).grid(row=0, column=0, padx=10, pady=5)
     tk.Label(root, text="Table Column", font=("Arial", 10, "bold")).grid(row=0, column=1, padx=10, pady=5)
 
+    #Store the pairs (selected_column: match_column) in mapping
     mapping = {}
+    #Store comboboxes for each match_column
     comboboxes = {}
 
-    table_columns += ["x coordinate", "y coordinate"]
-    table_columns.remove("geom")
+    #Replace the "geom" column with x and y coordinate for matching.
+    match_columns += ["x coordinate", "y coordinate"]
+    match_columns.remove("geom")
     
-    for i, table_col in enumerate(table_columns):
-        tk.Label(root, text=table_col).grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
+    #List all match_columns as rows with comboboxes holding selected_columns as values.
+    for i, match_col in enumerate(match_columns):
+        tk.Label(root, text=match_col).grid(row=i+1, column=0, padx=10, pady=5, sticky="w")
 
-        cb = ttk.Combobox(root, values=csv_columns, state="readonly", width=30)
+        cb = ttk.Combobox(root, values=select_columns, state="readonly", width=30)
         cb.grid(row=i+1, column=1, padx=10, pady=5)
-        comboboxes[table_col] = cb
+        comboboxes[match_col] = cb
 
+    #Successively add non-null values as long as selected_column is not already in mapping. Otherwise start loop again.
     def on_submit():
         mapping.clear()
-        for _, table_col in enumerate(table_columns):
-            selected = comboboxes[table_col].get()
+        for _, match_col in enumerate(match_columns):
+            selected = comboboxes[match_col].get()
+            #match_col has no match.
             if not selected:
-                mb.showerror(title="Wrong input", message=f"Zeile {table_col} nicht ausgefüllt.")
+                mb.showerror(title="Wrong input", message=f"Zeile {match_col} nicht ausgefüllt.")
                 break
+            #selected_col was already selected.
             elif selected in mapping.keys():
                 mb.showerror(title="Wrong input", message=f"{selected} was selected multiple times.")
                 break
+            #all values are not null and do not occur twice.
             else:
-                mapping[selected] = table_col
+                mapping[selected] = match_col
         else:
             root.destroy()
 
     submit_btn = ttk.Button(root, text="Submit Mapping", command=on_submit)
-    submit_btn.grid(row=len(table_columns)+1, column=0, columnspan=4, pady=10)
+    submit_btn.grid(row=len(match_columns)+1, column=0, columnspan=4, pady=10)
 
     root.mainloop()
     return mapping

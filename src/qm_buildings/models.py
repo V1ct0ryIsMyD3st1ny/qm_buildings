@@ -1,6 +1,7 @@
 from typing import List, Optional
 from sqlalchemy import String
 from sqlalchemy import ForeignKey
+from sqlalchemy import inspect
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import relationship
@@ -14,7 +15,7 @@ class Base(DeclarativeBase):
 class LookupBuilding(Base):
     __tablename__ = "lookup_buildings"
     hauskey: Mapped[int] = mapped_column(primary_key=True)
-    strasse: Mapped[str]
+    street: Mapped[str]
     house_nr: Mapped[Optional[str]]
     gangfolge: Mapped[Optional[int]]
     zgb: Mapped[str] = mapped_column(String(7))
@@ -25,8 +26,10 @@ class LookupBuilding(Base):
     search_buildings: Mapped[List["SearchBuilding"]] = relationship(back_populates="lookup_building")
 
     def __repr__(self) -> str:
-        return f"Building(hauskey={self.hauskey}, gangfolge={self.gangfolge})"
-    
+        mapped_object = inspect(self)
+        info = ", ".join(f"{col.key}: {getattr(self, col.key)}" for col in mapped_object.attrs if col.key != "geom")
+        return f"LookupBuilding({info})"
+     
 
 class SearchBuilding(Base):
     __tablename__ = "search_buildings"
@@ -40,6 +43,8 @@ class SearchBuilding(Base):
     lookup_building: Mapped["LookupBuilding"] = relationship(back_populates="search_buildings")
 
     def __repr__(self) -> str:
-        return f"Building(hauskey={self.hauskey})"
+        mapped_object = inspect(self)
+        info = ", ".join(f"{col.key}: {getattr(self, col.key)}" for col in mapped_object.attrs if col.key != "geom")
+        return f"LookupBuilding({info})"
     
     
