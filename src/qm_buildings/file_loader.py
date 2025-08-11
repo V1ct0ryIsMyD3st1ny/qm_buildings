@@ -5,7 +5,7 @@ from tkinter import ttk
 
   
 
-def load_file() -> str:
+def load_file(title: str) -> str:
     """Let user select a csv-file.
 
     Raises:
@@ -16,7 +16,7 @@ def load_file() -> str:
     """    
     #User should only select a csv-file
     options = {
-        'title': 'Wähle eine Datei aus',
+        'title': title,
         'filetypes': (("CSV-Datei","*.csv"),),
         'initialdir': settings.BASE_DIR,
         'defaultextension': ".csv"

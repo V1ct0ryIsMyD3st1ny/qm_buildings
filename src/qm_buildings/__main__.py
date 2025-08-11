@@ -10,15 +10,16 @@ from sqlalchemy import inspect
 
 engine = setup.local_engine()
 
-#setup.setup_tables(models.Base, engine)
+setup.setup_tables(models.Base, engine)
 Session = setup.create_sessionmaker(engine)
 
 for Table in (models.LookupBuilding, models.SearchBuilding):
-    break
     mapped_object = inspect(Table)
     table_columns = [col.key for col in mapped_object.columns if col.key != "lookup_hauskey"]
 
-    filepath = fl.load_file()
+    title = f"Wähle Datei für den Import in {Table.__tablename__} aus"
+    
+    filepath = fl.load_file(title)
     df = pd.read_csv(filepath, sep=";", header=0, encoding='utf-8', nrows=10, low_memory=False)
 
     csv_columns = df.columns.values.tolist()
