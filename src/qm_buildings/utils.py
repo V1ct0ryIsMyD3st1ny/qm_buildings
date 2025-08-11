@@ -1,5 +1,7 @@
 import pandas as pd
+import time
 from geoalchemy2.shape import WKTElement
+from functools import wraps
 
 
 def add_geometry(df: pd.DataFrame, x_col: str, y_col: str, srid: int=2056) -> pd.DataFrame:
@@ -22,3 +24,13 @@ def add_geometry(df: pd.DataFrame, x_col: str, y_col: str, srid: int=2056) -> pd
     used_columns = [col for col in df.columns if col not in (x_col, y_col)]
     df = df[used_columns]
     return df
+
+def execution_time(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = f(*args, **kwargs)
+        end = time.time()
+        print(f"Execution of {f.__name__} took {end-start}s")
+        return result
+    return wrapper
