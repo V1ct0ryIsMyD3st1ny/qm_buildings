@@ -35,9 +35,9 @@ for Table in (models.LookupBuilding, models.SearchBuilding):
         
 with Session.begin() as session:
     buildings = queries.assign_closest_lookup(models.SearchBuilding, models.LookupBuilding, session)
-    first_row = [building[0] for building in buildings]
-    second_row = [building[1] for building in buildings]
-    df1 = queries.mapped_instances_to_dict(first_row)
-    df2 = queries.mapped_instances_to_dict(second_row)
-    df = df1.join(df2, lsuffix='_first_row', rsuffix='_second_row')
+    search_row = [building[0] for building in buildings]
+    lookup_row = [building[1] for building in buildings]
+    df1 = queries.mapped_instances_to_dict(search_row)
+    df2 = queries.mapped_instances_to_dict(lookup_row)
+    df = df1.join(df2, lsuffix='_search', rsuffix='_lookup')
     df.to_csv(settings.BASE_DIR.parent / 'Export.csv', sep=";", header=True, index=False, encoding='utf-8')

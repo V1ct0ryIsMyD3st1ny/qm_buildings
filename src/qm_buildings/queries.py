@@ -51,7 +51,6 @@ def mapped_instances_to_dict[MappedClass: Base](instances: list[MappedClass]) ->
         {k: v for k, v in vars(obj).items()
         if k not in ('geom', '_sa_instance_state')}
         for obj in instances
-
     ]
     return pd.DataFrame(records)
 
