@@ -41,4 +41,5 @@ with Session.begin() as session:
     df1 = queries.mapped_instances_to_dict(search_row)
     df2 = queries.mapped_instances_to_dict(lookup_row)
     df = df1.join(df2, lsuffix='_search', rsuffix='_lookup')
-    df.to_csv(settings.BASE_DIR.parent / 'Export.csv', sep=";", header=True, index=False, encoding='utf-8')
+    save_filepath = fl.download_file('Wo soll die Datei gespeichert werden?')
+    df.to_csv(save_filepath, sep=";", header=True, index=False, encoding='utf-8')

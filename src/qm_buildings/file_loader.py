@@ -29,12 +29,35 @@ def load_file(title: str) -> str:
         #If no file selected ask for retry.
         else:
             retry = mb.askretrycancel(
-                title='Keine Datei ausgwählt',
+                title='Keine Datei ausgewählt',
                 message="Willst du es nochmal versuchen"
             )
             if not retry:
                 raise KeyboardInterrupt("Nutzer hat den Import abgebrochen.")
             
+            
+def download_file(title: str) -> str:
+    
+    options = {
+        'title': title,
+        'filetypes': (("CSV-Datei","*.csv"),),
+        'initialdir': settings.BASE_DIR,
+        'defaultextension': ".csv"
+    }
+     #Loop until file is selected.
+    while True:
+        filepath = fd.asksaveasfilename(**options)
+        if filepath:
+            return filepath
+        #If no file selected ask for retry.
+        else:
+            retry = mb.askretrycancel(
+                title='Keine Datei ausgewählt',
+                message="Willst du es nochmal versuchen"
+            )
+            if not retry:
+                raise KeyboardInterrupt("Nutzer hat den Import abgebrochen.")
+       
 
 def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -> dict:
     """Let user match columns by selecting columns in select_columns.
