@@ -1,6 +1,6 @@
 [project]
 name = "qm-buildings"
-version = "0.1.0"
+version = "0.2.0"
 description = "Tool for managing two spatial databases"
 authors = [
     {name = "Stefan Moser",email = "stefanmoser1991@gmail.com"}
