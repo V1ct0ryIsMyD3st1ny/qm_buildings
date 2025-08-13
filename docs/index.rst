@@ -17,3 +17,4 @@ Contents
 .. toctree::
 
    file_loader
+   queries

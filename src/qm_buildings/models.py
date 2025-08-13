@@ -21,6 +21,8 @@ class LookupBuilding(Base):
     zgb: Mapped[Optional[str]] = mapped_column(String(7))
     depot: Mapped[Optional[int]]
     zgb_nr: Mapped[Optional[int]]
+    x_coord: Mapped[Optional[int]]
+    y_coord: Mapped[Optional[int]]
     geom: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=2056))
 
     search_buildings: Mapped[List["SearchBuilding"]] = relationship(back_populates="lookup_building")
@@ -38,8 +40,13 @@ class SearchBuilding(Base):
     __tablename__ = "search_buildings"
 
     hauskey: Mapped[int] = mapped_column(primary_key=True)
+    plz4: Mapped[int]
+    city: Mapped[str]
+    plz6: Mapped[int]
     street: Mapped[str]
-    house_number: Mapped[Optional[str]]
+    house_nr: Mapped[Optional[str]]
+    x_coord: Mapped[Optional[int]]
+    y_coord: Mapped[Optional[int]]
     geom: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=2056))
     lookup_hauskey: Mapped[Optional[int]] = mapped_column(ForeignKey("lookup_buildings.hauskey"))
 

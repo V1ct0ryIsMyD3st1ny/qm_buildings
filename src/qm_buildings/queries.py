@@ -6,6 +6,7 @@ from qm_buildings.utils import execution_time
 import pandas as pd
 
 
+@execution_time
 def import_table(df: pd.DataFrame, Table: type[Base], session: Session) -> None:
     """Import the the contents of the Dataframe to Table.
 
@@ -22,10 +23,18 @@ def import_table(df: pd.DataFrame, Table: type[Base], session: Session) -> None:
 
 @execution_time
 def assign_closest_lookup[MappedObject: Base](SearchTable: type[MappedObject], LookupTable: type[MappedObject], session: Session) -> list[tuple[MappedObject, MappedObject]]:
-    """
-    For each SearchBuilding without a lookup_hauskey, find the closest LookupBuilding
-    and set lookup_hauskey to its hauskey.
-    """
+    """For each building in SearchTable match the closest building in LookupTable.
+
+    Args:
+        SearchTable (type[MappedObject]): Buildings to find closest building.
+        LookupTable (type[MappedObject]): Buildings to lookup in.
+    
+    Returns:
+        list[tuple[MappedObject, MappedObject]]: List of pairs of buldings in SearchTable with closest buliding in LookupTable
+        
+    Type Variables:
+        MappedObject: A SQLAlchemy ORM mapped class type bound to Base containing the building data.
+    """    
     # Get the primary keys of the tables.
     lookup_key = inspect(LookupTable).primary_key[0]
     search_key = inspect(SearchTable).primary_key[0]

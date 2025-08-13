@@ -29,7 +29,7 @@ for Table in (models.LookupBuilding, models.SearchBuilding):
     df = pd.read_csv(filepath, sep=";", header=0, encoding='utf-8', low_memory=False)
     df = df.replace(np.nan, None)
     df.rename(columns=mapper, inplace=True)
-    df = utils.add_geometry(df, "x coordinate", "y coordinate")
+    df = utils.add_geometry(df, "x_coord", "y_coord")
 
     with Session.begin() as session:
         queries.import_table(df, Table, session)
@@ -41,5 +41,5 @@ with Session.begin() as session:
     df1 = queries.mapped_instances_to_dict(search_row)
     df2 = queries.mapped_instances_to_dict(lookup_row)
     df = df1.join(df2, lsuffix='_search', rsuffix='_lookup')
-    save_filepath = fl.download_file('Wo soll die Datei gespeichert werden?')
+    save_filepath = fl.save_file('Wo soll die Datei gespeichert werden?')
     df.to_csv(save_filepath, sep=";", header=True, index=False, encoding='utf-8')

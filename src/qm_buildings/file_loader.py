@@ -1,5 +1,6 @@
 from tkinter import filedialog as fd, messagebox as mb
 import qm_buildings.settings as settings
+import qm_buildings.utils as utils
 import tkinter as tk
 from tkinter import ttk
 
@@ -36,7 +37,15 @@ def load_file(title: str) -> str:
                 raise KeyboardInterrupt("Nutzer hat den Import abgebrochen.")
             
             
-def download_file(title: str) -> str:
+def save_file(title: str) -> str:
+    """Let user to select a csv-file to save as.
+
+    Raises:
+        KeyboardInterrupt: No file was selected and user cancels retry.
+
+    Returns:
+        str: filepath of the selected file.
+    """    
     
     options = {
         'title': title,
@@ -81,8 +90,7 @@ def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -
     #Store comboboxes for each match_column
     comboboxes = {}
 
-    #Replace the "geom" column with x and y coordinate for matching.
-    match_columns += ["x coordinate", "y coordinate"]
+    #Replace the "geom" column with x and y coordinate for matching (legacy, move to on_submit).
     match_columns.remove("geom")
     
     #List all match_columns as rows with comboboxes holding selected_columns as values.
@@ -95,20 +103,12 @@ def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -
 
     #Successively add non-null values as long as selected_column is not already in mapping. Otherwise start loop again.
     def on_submit():
-        mapping.clear()
-        for _, match_col in enumerate(match_columns):
-            selected = comboboxes[match_col].get()
-            #match_col has no match.
-            if not selected:
-                mb.showerror(title="Wrong input", message=f"Zeile {match_col} nicht ausgefüllt.")
-                break
-            #selected_col was already selected.
-            elif selected in mapping.keys():
-                mb.showerror(title="Wrong input", message=f"{selected} was selected multiple times.")
-                break
-            #all values are not null and do not occur twice.
-            else:
-                mapping[selected] = match_col
+        nonlocal mapping
+        try:
+            selected_columns = {match_col: comboboxes[match_col].get() for match_col in match_columns}
+            mapping = utils.create_mapping(match_columns, selected_columns)
+        except ValueError as e:
+            mb.showerror(title="Wrong Input", message=str(e))
         else:
             root.destroy()
 
@@ -117,3 +117,5 @@ def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -
 
     root.mainloop()
     return mapping
+
+

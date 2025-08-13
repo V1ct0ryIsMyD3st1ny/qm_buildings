@@ -12,10 +12,17 @@ dependencies = [
     "sqlalchemy (>=2.0.42,<3.0.0)",
     "geoalchemy2 (>=0.18.0,<0.19.0)",
     "pytest (>=8.4.1,<9.0.0)",
-    "psycopg2 (>=2.9.10,<3.0.0)"
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "pytest-cov (>=6.2.1,<7.0.0)"
 ]
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.coverage.run]
+omit = [
+    "src/qm_buildings/engine_setup.py",
+]
