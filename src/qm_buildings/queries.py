@@ -1,6 +1,7 @@
 from sqlalchemy import insert, delete, select, exists, true, join
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy.inspection import inspect
+from geoalchemy2.types import Geometry
 from qm_buildings.models import Base
 from qm_buildings.utils import execution_time
 import pandas as pd
@@ -55,7 +56,7 @@ def assign_closest_lookup[MappedObject: Base](SearchTable: type[MappedObject], L
     return result
 
 
-def mapped_instances_to_dict[MappedClass: Base](instances: list[MappedClass]) -> pd.DataFrame:
+def mapped_instances_to_dataframe[MappedClass: Base](instances: list[MappedClass]) -> pd.DataFrame:
     records = [
         {k: v for k, v in vars(obj).items()
         if k not in ('geom', '_sa_instance_state')}

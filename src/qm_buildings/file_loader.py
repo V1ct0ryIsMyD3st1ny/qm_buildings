@@ -68,7 +68,7 @@ def save_file(title: str) -> str:
                 raise KeyboardInterrupt("Nutzer hat den Import abgebrochen.")
        
 
-def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -> dict:
+def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -> dict: #pragma: no cover
     """Let user match columns by selecting columns in select_columns.
 
     Args:
@@ -89,9 +89,6 @@ def launch_mapping_window(match_columns: list[str], select_columns: list[str]) -
     mapping = {}
     #Store comboboxes for each match_column
     comboboxes = {}
-
-    #Replace the "geom" column with x and y coordinate for matching (legacy, move to on_submit).
-    match_columns.remove("geom")
     
     #List all match_columns as rows with comboboxes holding selected_columns as values.
     for i, match_col in enumerate(match_columns):

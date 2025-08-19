@@ -2,9 +2,7 @@ from typing import List, Optional
 from sqlalchemy import String
 from sqlalchemy import ForeignKey
 from sqlalchemy import inspect
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from geoalchemy2.types import Geometry
 
 
@@ -24,8 +22,6 @@ class LookupBuilding(Base):
     x_coord: Mapped[Optional[int]]
     y_coord: Mapped[Optional[int]]
     geom: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=2056))
-
-    search_buildings: Mapped[List["SearchBuilding"]] = relationship(back_populates="lookup_building")
 
     def __repr__(self) -> str:
         mapped_object = inspect(self)
@@ -48,9 +44,6 @@ class SearchBuilding(Base):
     x_coord: Mapped[Optional[int]]
     y_coord: Mapped[Optional[int]]
     geom: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=2056))
-    lookup_hauskey: Mapped[Optional[int]] = mapped_column(ForeignKey("lookup_buildings.hauskey"))
-
-    lookup_building: Mapped["LookupBuilding"] = relationship(back_populates="search_buildings")
 
     def __repr__(self) -> str:
         mapped_object = inspect(self)
