@@ -1,11 +1,15 @@
 import pytest
 import os
 import pandas as pd
+import qm_buildings.file_loader as fl
+from unittest.mock import Mock
+from typing import Optional
 from qm_buildings import queries as queries
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, func
 from geoalchemy2.types import Geometry
-from geoalchemy2.shape import WKTElement
+from geoalchemy2.shape import WKTElement, to_shape
+from shapely.geometry import Point
 
 
 @pytest.fixture(scope='session')
@@ -20,6 +24,8 @@ def LookupTable(Base):
     class LookupTable(Base):
         __tablename__ = "lookup_table"
         hauskey: Mapped[int] = mapped_column(primary_key=True)
+        x_coord: Mapped[Optional[int]]
+        y_coord: Mapped[Optional[int]]
         geom: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=2056))
     return LookupTable
 
@@ -29,6 +35,8 @@ def SearchTable(Base):
     class SearchTable(Base):
         __tablename__ = "search_table"
         hauskey: Mapped[int] = mapped_column(primary_key=True)
+        x_coord: Mapped[Optional[int]]
+        y_coord: Mapped[Optional[int]]
         geom: Mapped[str] = mapped_column(Geometry(geometry_type="POINT", srid=2056))
     return SearchTable
 
@@ -61,11 +69,11 @@ def db_session(connection):
     trans.rollback()
     
     
-def test_import_table(LookupTable, db_session):
+def test_df_to_mapped_class(LookupTable, db_session):
     geom1 = WKTElement("POINT(2600423 1199520)", srid=2056)
     geom2 = WKTElement("POINT(2600521 1199503)", srid=2056)
     df = pd.DataFrame({'hauskey': [1,2], 'geom': [geom1, geom2]})
-    queries.import_table(df, LookupTable, db_session)
+    queries.df_to_mapped_class(df, LookupTable, db_session)
     stmt = select(LookupTable)
     result = db_session.scalars(stmt).first()
     assert result.hauskey == 1
@@ -94,3 +102,37 @@ def test_mapped_instances_to_dataframe(LookupTable):
     df = queries.mapped_instances_to_dataframe([lookup1, lookup2])
     assert list(df) == ['hauskey']
     assert df['hauskey'].to_list() == [1, 4]
+    
+    
+def test_import_to_mapped_class(LookupTable, db_session, tmp_path, monkeypatch):
+    csv_file = tmp_path / "test.csv"
+    csv_file.write_text("Hauskey;X-Coord;Y-Coord\n123;2600423;1199520")
+    
+    monkeypatch.setattr(fl, "load_file", lambda title: csv_file)
+    monkeypatch.setattr(fl, "launch_mapping_window", lambda match_columns, select_columns: {"Hauskey": "hauskey", "X-Coord": "x_coord", "Y-Coord": "y_coord"})
+    queries.import_to_mapped_class(LookupTable, db_session)
+    
+    stmt = select(LookupTable)
+    result = db_session.scalars(stmt).first()
+    assert result.hauskey == 123
+    assert to_shape(result.geom) == Point(2600423, 1199520)
+    
+    monkeypatch.setattr(fl, "launch_mapping_window", lambda match_columns, select_columns: {})
+    with pytest.raises(KeyboardInterrupt):
+        queries.import_to_mapped_class(LookupTable, db_session)    
+    
+    
+def test_export_closest_lookup(SearchTable, LookupTable, db_session):
+    search1 = SearchTable(hauskey=1, geom=WKTElement("POINT(2600423 1199520)", srid=2056))
+    search2 = SearchTable(hauskey=2, geom=WKTElement("POINT(2600521 1199503)", srid=2056))
+    db_session.add(search1)
+    db_session.add(search2)
+    lookup1 = LookupTable(hauskey=1, geom=WKTElement("POINT(2600423 1199520)", srid=2056))
+    lookup2 = LookupTable(hauskey=4, geom=WKTElement("POINT(2600521 1199503)", srid=2056))
+    db_session.add(lookup1)
+    db_session.add(lookup2)
+    db_session.commit()
+    df = queries.export_closest_lookup(SearchTable, LookupTable, db_session)
+    assert 'hauskey_search' in list(df)
+    row = df.iloc[0]
+    assert row['hauskey_lookup'] == 4

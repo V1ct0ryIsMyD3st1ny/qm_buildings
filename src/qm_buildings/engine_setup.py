@@ -18,5 +18,4 @@ def create_sessionmaker(engine: Engine) -> sessionmaker:
 
 
 def setup_tables(Base: type[DeclarativeBase], engine: Engine) -> None:
-    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
