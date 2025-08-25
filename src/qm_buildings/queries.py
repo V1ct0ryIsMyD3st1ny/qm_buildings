@@ -17,7 +17,8 @@ def df_to_mapped_class(df: pd.DataFrame, Table: type[Base], session: Session) ->
         df (pd.DataFrame): Dataframe containg columns matching the columns of Table
         Table (type[Base]): Mapped class derived from Base.
         session (Session): Session connecting to Table.
-    """    
+    """   
+    print(f'Starting import of {Table.__table__.name}') 
     records = df.to_dict(orient='records')
     session.execute(delete(Table))
     session.execute(insert(Table), records)
