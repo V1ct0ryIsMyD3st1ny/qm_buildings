@@ -1,6 +1,5 @@
 import pandas as pd
 import time
-import chardet
 from geoalchemy2.shape import WKTElement
 from functools import wraps
 
